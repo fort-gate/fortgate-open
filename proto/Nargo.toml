@@ -1,0 +1,7 @@
+[package]
+name = "fortgate_id_proto"
+type = "bin"
+authors = ["Fortgate ID Team"]
+compiler_version = ">=0.31.0"
+
+[dependencies]
