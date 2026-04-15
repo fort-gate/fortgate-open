@@ -1,0 +1,20 @@
+namespace fortgate_id {
+    [Throws=FortgateError]
+    BlindedWitnessPackage create_fortgate_witness([ByRef] sequence<u8> cert_der);
+};
+
+dictionary BlindedWitnessPackage {
+    string rfc_commitment;
+    string salt;
+    string nullifier_hash;
+    sequence<u32> modulus_limbs;
+    u32 exponent;
+};
+
+[Error]
+enum FortgateError {
+    "ParseError",
+    "InvalidAlgorithm",
+    "RfcNotFound",
+    "CryptoError"
+}
