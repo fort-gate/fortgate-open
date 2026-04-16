@@ -1,40 +1,40 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use rsa::{RsaPublicKey, PaddingScheme, PublicKey};
-use sha2::Sha256;
-use num_bigint::BigUint;
+use fortgate_sp1_shared::Limbs64;
+use rsa::pkcs1v15::{Signature, VerifyingKey};
+use rsa::signature::hazmat::PrehashVerifier;
+use rsa::BigUint;
+use rsa::RsaPublicKey;
+use rsa::sha2::Sha256;
 
 pub fn main() {
-    // 1. LEER INPUTS (Proporcionados por el Host)
-    let modulus_limbs: [u32; 64] = sp1_zkvm::io::read();
-    let signature_limbs: [u32; 64] = sp1_zkvm::io::read();
+    let Limbs64(modulus_limbs) = sp1_zkvm::io::read();
+    let exponent: u32 = sp1_zkvm::io::read();
+    let Limbs64(signature_limbs) = sp1_zkvm::io::read();
     let hashed_message: [u8; 32] = sp1_zkvm::io::read();
     let rfc_commitment: [u8; 32] = sp1_zkvm::io::read();
 
-    // 2. RECONSTRUIR RSA DESDE LIMBS (Little Endian as per SDK)
-    let n = limbs_to_bigint(modulus_limbs);
-    let s = limbs_to_bigint(signature_limbs);
-    
-    // 3. VERIFICACIÓN CRIPTOGRÁFICA
-    let pub_key = RsaPublicKey::new(n, BigUint::from(65537u32))
-        .expect("Invalid RSA Modulus");
-    
-    pub_key.verify(
-        PaddingScheme::new_pkcs1v15_sign::<Sha256>(),
-        &hashed_message,
-        &s.to_bytes_be()
-    ).expect("RSA Verification Failed");
+    let n = limbs_to_biguint(modulus_limbs);
+    let e = BigUint::from(exponent);
+    let pub_key = RsaPublicKey::new(n, e).expect("Invalid RSA public key");
 
-    // 4. ATATESTACIÓN DE RESULTADO
+    let verifying_key = VerifyingKey::<Sha256>::new(pub_key);
+    let sig_int = limbs_to_biguint(signature_limbs);
+    let sig_bytes = sig_int.to_bytes_be();
+    let sig = Signature::try_from(sig_bytes.as_slice()).expect("invalid signature encoding");
+
+    verifying_key
+        .verify_prehash(&hashed_message, &sig)
+        .expect("RSA verification failed");
+
     sp1_zkvm::io::commit(&rfc_commitment);
 }
 
-/// Helper para convertir los limbs de 32-bits de vuelta a un BigInt de 2048-bits
-fn limbs_to_bigint(limbs: [u32; 64]) -> BigUint {
-    let mut digits = Vec::with_capacity(64);
-    for limb in limbs.iter() {
-        digits.push(*limb);
+fn limbs_to_biguint(limbs: [u32; 64]) -> BigUint {
+    let mut buf = [0u8; 256];
+    for (i, limb) in limbs.iter().enumerate() {
+        buf[i * 4..i * 4 + 4].copy_from_slice(&limb.to_le_bytes());
     }
-    BigUint::from_slice(&digits)
+    BigUint::from_bytes_le(&buf)
 }

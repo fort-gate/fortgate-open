@@ -1,0 +1,9 @@
+[package]
+name = "fortgate-sp1-shared"
+version = "0.1.0"
+edition = "2021"
+description = "Tipos bincode compartidos entre host SP1 y guest zkVM (limbs RSA)."
+
+[dependencies]
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+serde-big-array = "0.5.1"

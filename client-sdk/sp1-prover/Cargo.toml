@@ -1,0 +1,3 @@
+[workspace]
+members = ["sp1-shared", "program", "script"]
+resolver = "2"

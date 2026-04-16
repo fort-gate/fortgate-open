@@ -1,0 +1,2 @@
+SP1_ELF_PLACEHOLDER
+Reemplazar ejecutando `cargo build --release -p fortgate-id-script` con toolchain Succinct (`cargo prove`) y `SP1_SKIP_PROGRAM_BUILD` sin definir o distinto de `true`.
