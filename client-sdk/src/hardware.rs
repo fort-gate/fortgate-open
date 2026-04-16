@@ -3,9 +3,17 @@ use crate::types::SecurityTier;
 pub struct HardwareSensor;
 
 impl HardwareSensor {
+    /// Detecta el nivel de seguridad simulado.
+    /// P2.2: Lógica por plataforma documentada para auditoría.
     pub fn detect_tier() -> SecurityTier {
-        // En producción esto usa APIs nativas de iOS/Android
-        SecurityTier::High 
+        #[cfg(target_os = "ios")]
+        { SecurityTier::Maximum } // Asumimos Secure Enclave en iOS
+        
+        #[cfg(target_os = "android")]
+        { SecurityTier::High } // TEE por defecto en Android
+        
+        #[cfg(not(any(target_os = "ios", target_os = "android")))]
+        { SecurityTier::Medium } // Desktop/Web es Tier 3 por defecto
     }
 
     pub fn calculate_distance(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f32 {

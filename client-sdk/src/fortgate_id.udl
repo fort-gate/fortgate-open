@@ -3,12 +3,19 @@ namespace fortgate_id {
     BlindedWitnessPackage create_fortgate_witness([ByRef] sequence<u8> cert_der);
 };
 
+enum SecurityTier {
+    "Maximum",
+    "High",
+    "Medium",
+};
+
 dictionary BlindedWitnessPackage {
     string rfc_commitment;
     string salt;
     string nullifier_hash;
     sequence<u32> modulus_limbs;
     u32 exponent;
+    SecurityTier detected_tier;
 };
 
 [Error]
@@ -17,4 +24,4 @@ enum FortgateError {
     "InvalidAlgorithm",
     "RfcNotFound",
     "CryptoError"
-}
+};

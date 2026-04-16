@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, uniffi::Enum)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum SecurityTier {
     Maximum, // StrongBox / Secure Enclave
     High,    // TEE / Keystore
