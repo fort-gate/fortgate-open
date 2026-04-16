@@ -1,51 +1,93 @@
-# 🛡️ Fortgate ID: The New Frontier of Sovereign Digital Identity
-### *Financial Onboarding with Zero-Knowledge (ZK) Cryptography*
+# Fortgate ID: Sovereign KYC with Zero-Knowledge Proofs
 
-**Fortgate ID** is a world-class digital identity SDK designed to eliminate synthetic identity fraud and streamline financial onboarding. By leveraging **Electronic Signatures (PKI/X.509)** and cutting-edge ZK cryptography, we enable financial institutions to verify customer identities with **absolute mathematical certainty** and **total data privacy**.
+## Legally-grounded digital identity verification for Mexico, designed to scale across LATAM
 
----
-
-## 💎 Value Proposition
-
-### 1. Sovereign Privacy (Blinded Identity)
-We ensure that sensitive Personally Identifiable Information (PII) **never leaves the user's device**. Through *Zero-Knowledge Proofs (ZKP)*, banks receive a "Truth Attestation" without ever accessing the original documents.
-
-### 2. Legal Integrity & Compliance
-- **Digital Signature Standards:** Compliant with global e-signature laws (eIDAS, LFEA).
-- **Non-Repudiation:** Cryptographically guaranteed identity binding.
-- **Audit-Ready:** Automated generation of digital timestamps and legal constancies.
-
-### 3. Proof of Physical Existence (PoPE)
-- **Hardware-Rooted Trust:** Deep integration with *Secure Enclave* (iOS) and *StrongBox* (Android).
-- **ZK Geofencing:** Mathematical proof of location within a specific range without revealing exact coordinates.
+**Fortgate ID** is a KYC-focused digital identity SDK that combines **government-issued digital signatures (PKI/X.509)** with **Zero-Knowledge Proofs (ZKP)**.  
+The goal is to help regulated institutions verify identity claims with high cryptographic assurance while minimizing exposure of sensitive personal data.
 
 ---
 
-## 📂 Audit, Traceability & Compliance
-For **Compliance** departments and regulators, Fortgate ID provides a transparent and "Future-Proof" audit framework:
+## Scope and Positioning
 
-### 1. Explainable AI (XAI) Audit Report
-Every successful validation generates a technical evidence package detailing (without revealing PII):
-- Success of the e.firma RSA-2048 verification.
-- Detected hardware security level (Tier).
-- Geofencing result (in/out of range).
-- Confirmed Liveness detection.
+Fortgate ID is designed for **KYC identity verification and evidentiary traceability**.  
+It is **not** positioned as a full AML transaction monitoring platform.
 
-### 2. NOM-151 Digital Timestamp
-The evidence hash is sent to a Certification Service Provider (PSC) to obtain a **NOM-151 Conservation Constancy**, providing digital public faith and ensuring the file is tamper-proof.
+Our legal-operational focus starts in **Mexico** and uses:
 
-### 3. Independent Verification (Self-Sovereign Audit)
-Regulators can independently validate the proof using Fortgate’s public Verification Key (VKey), without relying on our infrastructure.
+- Government-issued digital identity mechanisms such as **e.firma**.
+- Evidence preservation and timestamping workflows aligned with **NOM-151**.
+
+The architecture is built to extend to other LATAM jurisdictions by replacing country-specific trust anchors, signature validation policies, and evidentiary standards with each country's legal equivalent.
 
 ---
 
-## 🛠️ Technical Specifications
+## Core Value Proposition
+
+### 1) Privacy by Design (Blinded Identity)
+
+Personally Identifiable Information (PII) is processed locally whenever possible.  
+Through ZKP-based attestations, relying parties can validate specific claims without receiving full source documents.
+
+### 2) Legal-grade Evidence for KYC Workflows
+
+- **Digital signature validation:** Verification of government-recognized signature chains according to configured jurisdictional policy.
+- **Non-repudiation support:** Signed evidence links identity assertions to verified credentials and cryptographic proof artifacts.
+- **Traceability:** Deterministic evidence packaging for audit, legal review, and supervisory examination.
+
+### 3) Device and Presence Integrity Signals
+
+- **Hardware-backed security:** Integration paths for Secure Enclave (iOS) and StrongBox (Android), when available.
+- **Geofencing proofs:** Optional proof of location-range conditions without disclosing exact coordinates.
+- **Liveness checks:** Optional anti-spoofing signals captured as verifiable evidence inputs.
+
+---
+
+## Mexico Legal Alignment (Current Focus)
+
+For Mexico deployments, Fortgate ID supports workflows aligned with:
+
+- **e.firma-based identity assertions** as part of digital onboarding evidence.
+- **NOM-151 timestamping and conservation constancy** to strengthen integrity, date certainty, and auditability of evidence records.
+
+> Final legal enforceability depends on implementation details, institutional policy, and applicable sector regulation.  
+> Fortgate ID provides the technical evidence framework; legal teams should validate jurisdiction-specific interpretation.
+
+---
+
+## LATAM Expansion Model (Architecture-Ready)
+
+Fortgate ID uses a country-adapter model to scale across LATAM:
+
+- **Trust Anchor Adapter:** Country-specific trusted issuers and certificate chains.
+- **Signature Policy Adapter:** Validation rules and cryptographic profile per jurisdiction.
+- **Evidence Standard Adapter:** Local equivalent of timestamping/conservation requirements.
+- **Verification Interface:** Common API so product teams keep one integration path while swapping regulatory modules.
+
+This allows a single technical stack with jurisdiction-aware legal evidence outputs.
+
+---
+
+## Audit and Independent Verification
+
+Each successful verification can generate an evidence package that includes:
+
+- Signature verification result and certificate metadata.
+- ZK proof artifact identifiers and verification outcome.
+- Device security tier and optional liveness/geofencing outcomes.
+- Timestamp and conservation references (for jurisdictions that require them, such as NOM-151 in Mexico).
+
+Regulators, auditors, and counterparties can verify proof integrity using public verification material without depending on Fortgate-managed infrastructure.
+
+---
+
+## Technical Specifications
+
 | Component | Technology |
 | :--- | :--- |
-| **Core Engine** | Rust (High-Performance FFI/WASM) |
-| **ZK Cryptography** | Noir (DSL) + Poseidon Hash (BN254) |
-| **Global Registry** | Monad / Aligned Layer (Settlement) |
-| **Proving Network** | Succinct SP1 (zkVM RISC-V) |
+| Core Engine | Rust (FFI/WASM) |
+| ZK Cryptography | Noir (DSL) + Poseidon Hash (BN254) |
+| Settlement/Anchoring | Monad / Aligned Layer |
+| Proving Network | Succinct SP1 (zkVM RISC-V) |
 
 ---
-**Fortgate ID: Turning local laws into global mathematical proofs.**
+**Fortgate ID: Local legal validity, cryptographic trust, and LATAM-ready KYC architecture.**
