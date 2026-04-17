@@ -1,0 +1,7 @@
+[package]
+name = "fortgate_poseidon_check"
+type = "lib"
+authors = ["Fortgate ID Engineering"]
+compiler_version = ">=0.31.0"
+
+[dependencies]
