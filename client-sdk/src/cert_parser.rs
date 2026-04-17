@@ -22,7 +22,7 @@ pub enum CertParseError {
     InvalidDer,
     #[error("not an RSA public key")]
     UnsupportedKey,
-    #[error("RFC not found in subject (OID 2.5.4.45)")]
+    #[error("RFC not found in subject (OIDs soportados: 2.5.4.45, uid, OpenSSL uniqueIdentifier)")]
     RfcNotFound,
     #[error("RSA modulus must be 2048 bits, got {0}")]
     InvalidModulusBits(usize),
