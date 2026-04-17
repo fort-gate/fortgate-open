@@ -11,12 +11,12 @@ pub mod types;
 #[cfg(target_arch = "wasm32")]
 mod wasm;
 
-use crate::blinded_witness::BlindedWitnessGenerator;
 use crate::cert_parser::parse_sat_certificate;
 use crate::hardware::HardwareSensor;
 use crate::types::SecurityTier;
 
 pub use cert_parser::{parse_sp1_inputs, CertParseError, Sp1CertInputs};
+pub use blinded_witness::BlindedWitnessGenerator;
 
 uniffi::include_scaffolding!("fortgate_id");
 

@@ -1,0 +1,6 @@
+{
+  "rfc": "VECTOR_RFC_DEMO_01",
+  "salt_hex": "01000000000000000000000000000000000000000000000000000000000000ab",
+  "expected_rfc_commitment_hex": "b46d4f1f8cc8f988f99d31ec6fa7eef0a45ef7b2d9f9e1c0da5b520797af1829",
+  "expected_nullifier_hex": "7fe171332cb246e1d9536efe999cd5e4a211adc8dd807f6e2c48b993d78d9428"
+}
