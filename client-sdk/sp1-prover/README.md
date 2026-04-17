@@ -5,6 +5,15 @@
 - `sp1-sdk` / `sp1-zkvm` / `sp1-build`: **1.2.x** (alineado con `Cargo.lock` del workspace).
 - El host **debe** compilarse en **`--release`** (el SDK emite un panic en debug si `ProverClient::new()` se usa en modo debug).
 
+### Matriz de compatibilidad (resumen)
+
+| Componente | Versión / notas |
+|------------|-------------------|
+| **SP1 local** (este repo) | `sp1-sdk` **1.2.x**, guest RISC-V generado por `sp1_build` con toolchain **Succinct** (`cargo prove`). |
+| **ELF placeholder** | `program/elf/riscv32im-succinct-zkvm-elf` texto placeholder; **no** usar para `prove` real. Sustituir con ELF compilado. |
+| **Aligned CLI** | Probar contra la versión instalada del binario `aligned`; red (`holesky`, etc.) según documentación vigente de Aligned. |
+| **Succinct Prover Network (v6)** | Flujo documentado en docs Succinct con `sp1-sdk` ≥ beta de red; **no** mezclar con 1.2.x local sin matriz de pruebas explícita. Estado: **experimental** hasta migración coordinada. |
+
 ## Guest
 
 Orden de lectura en `program/src/main.rs`:
@@ -43,3 +52,11 @@ Una build real de prueba debe **sin** `SP1_SKIP_PROGRAM_BUILD`, de modo que `sp1
 ```
 
 Variables de entorno opcionales: `FORTGATE_CERT_DER` (ruta al DER si no se pasa argumento).
+
+## Verificación local de artefactos
+
+Tras un `prove` real (sin `SP1_SKIP_PROGRAM_BUILD`), comprobar que existan binarios no vacíos:
+
+```bash
+bash ../../scripts/verify_sp1_local.sh
+```
