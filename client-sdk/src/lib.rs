@@ -6,6 +6,8 @@ pub mod cert_parser;
 pub mod enclave_wrapper;
 pub mod field_encoding;
 pub mod hardware;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod hw_trust;
 pub mod types;
 
 #[cfg(target_arch = "wasm32")]
