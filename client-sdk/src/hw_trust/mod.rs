@@ -10,7 +10,7 @@ pub mod backends;
 pub use commitment::{hw_nullifier_hex, pubkey_commitment_bytes, pubkey_commitment_hex};
 pub use error::HwTrustError;
 pub use handshake::HwHandshake;
-pub use m_hw::{m_hw_challenge_hash, MHw, CHALLENGE_TTL_SECS, HW_PURPOSE_POC};
+pub use m_hw::{m_hw_challenge_hash, parse_tier, MHw, CHALLENGE_TTL_SECS, HW_PURPOSE_POC};
 pub use types::{HwBackend, HW_HANDSHAKE_PACKAGE_VERSION};
 pub use verify::{verify_handshake_local, LocalVerifyResult, VerifyStatus};
 

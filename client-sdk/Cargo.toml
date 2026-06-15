@@ -25,7 +25,6 @@ uuid = { version = "1", features = ["v4", "serde"] }
 p256 = { version = "0.13", features = ["ecdsa", "pkcs8", "pem"] }
 ecdsa = { version = "0.16", features = ["signing", "verifying"] }
 dirs = "5"
-clap = { version = "4", features = ["derive"] }
 wasm-bindgen = "0.2.92"
 uniffi = { version = "0.28", features = ["cli"] }
 serde-wasm-bindgen = "0.6.5"
@@ -39,13 +38,6 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 x509-parser = "0.16.0"
 serde_json = "1.0"
 tempfile = "3"
-
-[[bin]]
-name = "fortgate-hw-poc"
-path = "src/bin/fortgate_hw_poc.rs"
-
-[features]
-default = []
 
 [build-dependencies]
 uniffi_build = "0.28"

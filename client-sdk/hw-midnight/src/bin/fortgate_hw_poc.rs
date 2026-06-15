@@ -1,7 +1,8 @@
-//! CLI PoC hardware trust (H1): keygen, challenge, sign, verify-local.
+//! CLI PoC hardware trust: keygen, challenge, sign, prove, verify.
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
+use fortgate_hw_midnight::MidnightHwTrustProvider;
 use fortgate_id::hw_trust::backends::{software_poc::SoftwarePocBackend, HwTrustBackend};
 use fortgate_id::hw_trust::{
     default_software_backend, sign_challenge_with_backend, verify_handshake_local, HwBackend,
@@ -10,9 +11,10 @@ use fortgate_id::hw_trust::{
 use fortgate_id::types::SecurityTier;
 use std::fs;
 use std::path::PathBuf;
+use std::time::Instant;
 
 #[derive(Parser)]
-#[command(name = "fortgate-hw-poc", about = "Fortgate hardware trust PoC (H1)")]
+#[command(name = "fortgate-hw-poc", about = "Fortgate hardware trust PoC")]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -43,12 +45,28 @@ enum Commands {
         #[arg(long)]
         key_dir: Option<PathBuf>,
     },
-    /// Verificación criptográfica local (sin ZK Midnight aún)
+    /// Verificación criptográfica local (sin ZK)
     VerifyLocal {
         #[arg(long, short)]
         handshake: PathBuf,
     },
-    /// keygen → challenge → sign → verify-local
+    /// Genera proof Midnight hw-trust-v1 → proof_package.json
+    Prove {
+        #[arg(long, short)]
+        handshake: PathBuf,
+        #[arg(long, short)]
+        out: PathBuf,
+        #[arg(long)]
+        setup_keys: bool,
+    },
+    /// Verifica proof_package + handshake (ZK + nullifier off-circuit)
+    Verify {
+        #[arg(long, short)]
+        package: PathBuf,
+        #[arg(long, short)]
+        handshake: PathBuf,
+    },
+    /// keygen → challenge → sign → prove → verify
     Demo {
         #[arg(long)]
         tmp: Option<PathBuf>,
@@ -66,6 +84,12 @@ fn main() -> anyhow::Result<()> {
             key_dir,
         } => cmd_sign(challenge, out, key_dir),
         Commands::VerifyLocal { handshake } => cmd_verify_local(handshake),
+        Commands::Prove {
+            handshake,
+            out,
+            setup_keys,
+        } => cmd_prove(handshake, out, setup_keys),
+        Commands::Verify { package, handshake } => cmd_verify(package, handshake),
         Commands::Demo { tmp } => cmd_demo(tmp),
     }
 }
@@ -78,7 +102,7 @@ fn backend_from_name(name: &str, key_dir: Option<PathBuf>) -> anyhow::Result<Sof
                 .unwrap_or_else(default_software_backend);
             Ok(b)
         }
-        other => anyhow::bail!("backend no soportado en H1: {other} (usa software_poc)"),
+        other => anyhow::bail!("backend no soportado: {other} (usa software_poc)"),
     }
 }
 
@@ -152,15 +176,50 @@ fn cmd_verify_local(handshake: PathBuf) -> anyhow::Result<()> {
     }
 }
 
+fn cmd_prove(handshake: PathBuf, out: PathBuf, setup_keys: bool) -> anyhow::Result<()> {
+    let raw = fs::read_to_string(&handshake)?;
+    let hs = HwHandshake::from_json(&raw)?;
+    let provider = MidnightHwTrustProvider::new();
+    if setup_keys {
+        provider.setup_keys().context("setup vk/pk")?;
+    }
+    eprintln!("⚠️  midnight-zk-stdlib — no auditado; solo PoC");
+    let start = Instant::now();
+    let package = provider.prove_handshake(&hs).context("prove")?;
+    eprintln!(
+        "prove OK en {} ms (reportado: {} ms)",
+        start.elapsed().as_millis(),
+        package.proving_time_ms
+    );
+    MidnightHwTrustProvider::write_package(&out, &package)?;
+    eprintln!("proof_package → {}", out.display());
+    Ok(())
+}
+
+fn cmd_verify(package: PathBuf, handshake: PathBuf) -> anyhow::Result<()> {
+    let hs = HwHandshake::from_json(&fs::read_to_string(&handshake)?)?;
+    let pkg = MidnightHwTrustProvider::read_package(&package).context("read package")?;
+    let provider = MidnightHwTrustProvider::new();
+    let start = Instant::now();
+    provider
+        .verify_against_handshake(&pkg, &hs)
+        .context("verify ZK")?;
+    eprintln!("✅ GREEN — ZK hw-trust-v1 OK ({:?})", start.elapsed());
+    Ok(())
+}
+
 fn cmd_demo(tmp: Option<PathBuf>) -> anyhow::Result<()> {
     let dir = tmp.unwrap_or_else(|| PathBuf::from("/tmp/fg-hw-demo"));
     fs::create_dir_all(&dir)?;
     cmd_keygen(Some(dir.clone()))?;
     let challenge_path = dir.join("challenge.json");
     let handshake_path = dir.join("handshake.json");
+    let proof_path = dir.join("proof_package.json");
     cmd_challenge(challenge_path.clone(), "software_poc", Some(dir.clone()))?;
     cmd_sign(challenge_path, handshake_path.clone(), Some(dir.clone()))?;
-    cmd_verify_local(handshake_path)?;
+    cmd_verify_local(handshake_path.clone())?;
+    cmd_prove(handshake_path.clone(), proof_path.clone(), true)?;
+    cmd_verify(proof_path, handshake_path)?;
     eprintln!("demo OK en {}", dir.display());
     Ok(())
 }

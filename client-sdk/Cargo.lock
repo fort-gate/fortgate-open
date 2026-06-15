@@ -679,7 +679,6 @@ dependencies = [
  "ark-serialize",
  "asn1-rs",
  "chrono",
- "clap",
  "dirs",
  "ecdsa",
  "getrandom 0.2.17",
