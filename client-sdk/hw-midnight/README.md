@@ -40,7 +40,7 @@ cargo run --release --bin fortgate-hw-poc -- demo --tmp /tmp/fg-hw-demo
 cargo run --release --bin fortgate-hw-poc -- demo-full --tmp /tmp/fg-hw-demo-full
 ```
 
-Subcomandos: `keygen`, `challenge`, `sign`, `verify-local`, `prove`, `verify`, `sign-doc`, `prove-doc`, `prove-geo`, `prove-all`, `verify-all`, `demo`, `demo-full`.
+Subcomandos: `keygen`, `challenge`, `sign`, `verify-local`, `prove`, `verify`, `sign-doc`, `prove-doc`, `prove-geo`, `prove-all`, `verify-all`, `build-verify-request`, `verify-bank`, `demo`, `demo-full`.
 
 **Nota:** el host Midnight debe compilarse en `--release`; en debug `ProverClient` puede fallar.
 
@@ -68,6 +68,19 @@ prover.verify_all(&evidence, &handshake, &doc_record)?;
 cargo test                                    # unit tests (rápido)
 cargo test -- --ignored                       # E2E con SRS (~30 s en release)
 ```
+
+## CLI (verificación local estilo banco)
+
+```bash
+cargo run --release --bin fortgate-hw-poc -- verify-bank \
+  --request /tmp/fg-hw-demo-full/verify_request.json
+```
+
+Subcomandos H4: `build-verify-request`, `verify-bank`. `demo-full` también escribe `verify_request.json`.
+
+## API Enterprise mock (H4)
+
+Ver [`enterprise/credit-sign-api/README.md`](../../enterprise/credit-sign-api/README.md).
 
 ## Tiempos de referencia (release, Mac PoC)
 

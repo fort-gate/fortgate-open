@@ -3,8 +3,9 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
 use fortgate_hw_midnight::{
-    demo_manifest, sign_doc_manifest, CreditSignProver, DocBindRecord, MidnightDocBindProvider,
-    MidnightGeoRangeProvider, MidnightHwTrustProvider,
+    build_verify_request, demo_manifest, sign_doc_manifest, CreditSignProver, CreditSignVerifier,
+    DocBindRecord, InstitutionPolicy, MidnightDocBindProvider, MidnightGeoRangeProvider,
+    MidnightHwTrustProvider, VerifyResponse,
 };
 use fortgate_id::hw_trust::backends::{software_poc::SoftwarePocBackend, HwTrustBackend};
 use fortgate_id::hw_trust::{
@@ -143,6 +144,28 @@ enum Commands {
         #[arg(long)]
         tmp: Option<PathBuf>,
     },
+    /// Arma verify_request.json para la API Enterprise (H4)
+    BuildVerifyRequest {
+        #[arg(long, short)]
+        evidence: PathBuf,
+        #[arg(long, short)]
+        handshake: PathBuf,
+        #[arg(long, short)]
+        doc_record: PathBuf,
+        #[arg(long)]
+        actual_lat: f64,
+        #[arg(long)]
+        actual_lon: f64,
+        #[arg(long, short)]
+        out: PathBuf,
+    },
+    /// Verifica localmente como la API Enterprise (sin HTTP)
+    VerifyBank {
+        #[arg(long, short)]
+        request: PathBuf,
+        #[arg(long, default_value = "credit-sign-mx-poc")]
+        policy_id: String,
+    },
 }
 
 fn main() -> anyhow::Result<()> {
@@ -206,6 +229,22 @@ fn main() -> anyhow::Result<()> {
         } => cmd_verify_all(evidence, handshake, doc_record),
         Commands::Demo { tmp } => cmd_demo(tmp),
         Commands::DemoFull { tmp } => cmd_demo_full(tmp),
+        Commands::BuildVerifyRequest {
+            evidence,
+            handshake,
+            doc_record,
+            actual_lat,
+            actual_lon,
+            out,
+        } => cmd_build_verify_request(
+            evidence,
+            handshake,
+            doc_record,
+            actual_lat,
+            actual_lon,
+            out,
+        ),
+        Commands::VerifyBank { request, policy_id } => cmd_verify_bank(request, policy_id),
     }
 }
 
@@ -488,7 +527,71 @@ fn cmd_demo_full(tmp: Option<PathBuf>) -> anyhow::Result<()> {
         evidence_path.clone(),
         true,
     )?;
-    cmd_verify_all(evidence_path, handshake_path, doc_record_path)?;
+    cmd_verify_all(evidence_path.clone(), handshake_path.clone(), doc_record_path.clone())?;
+
+    let verify_request = build_verify_request(
+        CreditSignProver::read_evidence(&evidence_path)?,
+        HwHandshake::from_json(&fs::read_to_string(&handshake_path)?)?,
+        serde_json::from_str(&fs::read_to_string(&doc_record_path)?)?,
+        19.4326,
+        -99.1332,
+    );
+    let verify_request_path = dir.join("verify_request.json");
+    fs::write(
+        &verify_request_path,
+        serde_json::to_string_pretty(&verify_request)?,
+    )?;
+    eprintln!("verify_request → {}", verify_request_path.display());
     eprintln!("demo-full OK en {}", dir.display());
+    Ok(())
+}
+
+fn cmd_build_verify_request(
+    evidence: PathBuf,
+    handshake: PathBuf,
+    doc_record: PathBuf,
+    actual_lat: f64,
+    actual_lon: f64,
+    out: PathBuf,
+) -> anyhow::Result<()> {
+    let hs = HwHandshake::from_json(&fs::read_to_string(&handshake)?)?;
+    let record: DocBindRecord = serde_json::from_str(&fs::read_to_string(&doc_record)?)?;
+    let evidence = CreditSignProver::read_evidence(&evidence)?;
+    let request = build_verify_request(evidence, hs, record, actual_lat, actual_lon);
+    if let Some(parent) = out.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent)?;
+        }
+    }
+    fs::write(&out, serde_json::to_string_pretty(&request)?)?;
+    eprintln!("verify_request → {}", out.display());
+    Ok(())
+}
+
+fn cmd_verify_bank(request: PathBuf, policy_id: String) -> anyhow::Result<()> {
+    let raw = fs::read_to_string(&request)?;
+    let req: fortgate_hw_midnight::CreditSignVerifyRequest = serde_json::from_str(&raw)?;
+    let policy = InstitutionPolicy::resolve(Some(&policy_id));
+    let verifier = CreditSignVerifier::new();
+    let start = Instant::now();
+    match verifier.verify_request(&req, &policy) {
+        VerifyResponse::Green(body) => {
+            eprintln!("✅ GREEN — attestationId={} ({:?})", body.attestation_id, start.elapsed());
+        }
+        VerifyResponse::Yellow(body) => {
+            eprintln!(
+                "⚠️  YELLOW — attestationId={} (backend débil) ({:?})",
+                body.attestation_id,
+                start.elapsed()
+            );
+        }
+        VerifyResponse::Red(body) => {
+            anyhow::bail!(
+                "RED {:?}: {}",
+                body.error_code,
+                body.message
+            );
+        }
+    }
     Ok(())
 }

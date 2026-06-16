@@ -6,6 +6,7 @@
 //! El nullifier Poseidon BN254 (dominio `0x4648`) se valida off-circuit hasta
 //! alinear chips Poseidon con `field_encoding.rs`.
 
+mod api_types;
 mod circuit_util;
 mod doc_bind;
 mod doc_bind_provider;
@@ -20,7 +21,15 @@ mod provider;
 mod relation;
 mod srs;
 mod types;
+mod verifier;
 mod witness;
+
+pub use api_types::{
+    build_verify_request, device_evidence_from_handshake, seal_geo_archive_poc,
+    CheckStatus, CreditSignVerifyRequest, DeviceEvidence, IdentityMock, PublicSummary,
+    SealedGeoArchive, VerifyChecks, VerifyErrorCode, VerifyErrorResponse, VerifyResponse,
+    VerifyStatus, VerifySuccessResponse,
+};
 
 pub use doc_bind::{DocBindCircuitInstance, DocBindRelationV1, DocBindWitness};
 pub use doc_bind_provider::{DocBindRecord, MidnightDocBindProvider};
@@ -33,6 +42,7 @@ pub use midnight_provider::MidnightCircuitProvider;
 pub use orchestrator::{demo_manifest, sign_doc_manifest, CreditSignProver};
 pub use provider::MidnightHwTrustProvider;
 pub use relation::{HwTrustRelationV1, HwTrustWitness, P256EcdsaSig};
+pub use verifier::{CreditSignVerifier, InstitutionPolicy};
 pub use types::{
     CreditSignEvidencePackage, DocBindPublicInputs, DocProofPackage, GeoProofPackage,
     GeoRangePublicInputs, HwProofPackage, HwTrustCircuitInstance, HwTrustPublicInputs,
