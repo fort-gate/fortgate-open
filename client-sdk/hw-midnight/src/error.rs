@@ -18,4 +18,12 @@ pub enum HwMidnightError {
     Verify(String),
     #[error("srs: {0}")]
     Srs(String),
+    #[error("manifest: {0}")]
+    Manifest(String),
+    #[error("jcs: {0}")]
+    Jcs(String),
+    #[error("geo: {0}")]
+    Geo(String),
+    #[error("doc: {0}")]
+    Doc(String),
 }

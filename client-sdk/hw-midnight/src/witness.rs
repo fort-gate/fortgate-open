@@ -58,7 +58,7 @@ pub fn witness_from_handshake(hs: &HwHandshake) -> Result<HwTrustWitness, HwMidn
     })
 }
 
-fn p256_ecdsa_sig_from_der(der: &[u8]) -> Result<P256EcdsaSig, HwMidnightError> {
+pub(crate) fn p256_ecdsa_sig_from_der(der: &[u8]) -> Result<P256EcdsaSig, HwMidnightError> {
     let sig = Signature::from_der(der)
         .map_err(|e| HwMidnightError::Witness(format!("DER firma inválida: {e}")))?;
     let bytes = sig.to_bytes();
