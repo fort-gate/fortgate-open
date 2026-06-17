@@ -82,6 +82,14 @@ Subcomandos H4: `build-verify-request`, `verify-bank`. `demo-full` también escr
 
 Ver [`enterprise/credit-sign-api/README.md`](../../enterprise/credit-sign-api/README.md).
 
+## Demo E2E happy path (H5)
+
+```bash
+./demo/hw-trust-demo.sh
+```
+
+Ver [`demo/README.md`](../../demo/README.md).
+
 ## Tiempos de referencia (release, Mac PoC)
 
 | Paso | ~ms |
