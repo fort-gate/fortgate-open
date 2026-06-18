@@ -8,6 +8,7 @@
 
 mod api_types;
 mod circuit_util;
+mod demo_runner;
 mod doc_bind;
 mod doc_bind_provider;
 mod error;
@@ -31,6 +32,10 @@ pub use api_types::{
     VerifyStatus, VerifySuccessResponse,
 };
 
+pub use demo_runner::{
+    run_credit_sign_demo, CreditSignDemoArtifacts, CreditSignDemoConfig, DemoPhase, DemoProgress,
+    DemoTimings,
+};
 pub use doc_bind::{DocBindCircuitInstance, DocBindRelationV1, DocBindWitness};
 pub use doc_bind_provider::{DocBindRecord, MidnightDocBindProvider};
 pub use error::HwMidnightError;

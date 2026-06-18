@@ -1,3 +1,4 @@
+use fortgate_id::hw_trust::HwTrustError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -6,6 +7,8 @@ pub enum HwMidnightError {
     Io(#[from] std::io::Error),
     #[error("json: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("hw_trust: {0}")]
+    HwTrust(#[from] HwTrustError),
     #[error("hex: {0}")]
     Hex(String),
     #[error("handshake: {0}")]
