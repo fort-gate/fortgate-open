@@ -8,15 +8,17 @@ Proveedor Midnight para el PoC de hardware trust + firma de crédito.
 
 | ID | Qué demuestra en ZK |
 |----|---------------------|
-| `hw-trust-v1` | `SHA-256(SPKI) == pubkey_commitment` + ECDSA P-256 sobre `challenge_hash` |
+| `hw-trust-v1` | `SHA-256(SPKI) == pubkey_commitment` + ECDSA P-256 sobre `challenge_hash` + Poseidon(pubkey_commitment, 0x4648) == hw_nullifier |
 | `doc-bind-v1` | `bundle_hash = SHA-256(pdf_sha256 \|\| manifest_hash)` + ECDSA P-256 sobre `bundle_hash` |
 | `geo-range-v1` | Distancia euclídea escalada ≤ radio (máx. 200 m, PoC CDMX) |
 
 Validación **off-circuit** (PoC v1):
 
-- `hw_nullifier` (Poseidon BN254, dominio `0x4648`) y `tier` en hw-trust
+- `tier` en hw-trust (se declara y valida off-chain, no se demuestra en circuito)
 - Hash JCS del manifiesto en doc-bind (`manifest_hash` vs bytes canónicos)
 - Haversine y radio en geo-range antes de `prove`
+
+`hw_nullifier` se calcula y restringe en circuito con el Poseidon nativo de Midnight (campo escalar BLS12-381 del circuito vía `PoseidonChip`/`std_lib.poseidon()`), no BN254 como asumían docs/spec anteriores — el circuito Midnight no tiene forma soportada de emular el campo escalar BN254 on-circuit (ver `docs/PROOF_PROVIDER_SPEC.md` y `docs/HW_TRUST_POC_SPEC.md`, también actualizados). El separador de dominio `0x4648` ("FH") no cambia.
 
 ## Setup SRS (una vez)
 
