@@ -70,10 +70,15 @@ fn sign_via_software_poc(
     use crate::hw_trust::backends::HwTrustBackend;
     use sha2::{Digest, Sha256};
 
-    let empty = || HardwareHandshake {
-        challenge_signature: vec![],
-        attestation_object: vec![],
-        public_key: vec![],
+    let empty = |context: &str, err: &crate::hw_trust::HwTrustError| {
+        eprintln!(
+            "[enclave_wrapper] deprecated stub falling back to empty HardwareHandshake ({context}): {err}"
+        );
+        HardwareHandshake {
+            challenge_signature: vec![],
+            attestation_object: vec![],
+            public_key: vec![],
+        }
     };
 
     let spki = match backend.pubkey_spki_der() {
@@ -81,9 +86,9 @@ fn sign_via_software_poc(
         Err(_) => match backend.keygen() {
             Ok(_) => match backend.pubkey_spki_der() {
                 Ok(spki) => spki,
-                Err(_) => return empty(),
+                Err(e) => return empty("pubkey_spki_der after keygen", &e),
             },
-            Err(_) => return empty(),
+            Err(e) => return empty("keygen", &e),
         },
     };
 
@@ -93,7 +98,7 @@ fn sign_via_software_poc(
 
     let challenge_signature = match backend.sign_challenge_hash(&challenge_hash) {
         Ok(sig) => sig,
-        Err(_) => return empty(),
+        Err(e) => return empty("sign_challenge_hash", &e),
     };
 
     let attestation_object = backend
