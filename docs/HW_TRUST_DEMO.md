@@ -191,6 +191,15 @@ Con fallback SP1 en nightly si toolchain Succinct disponible.
 
 ---
 
+## Nota: `enclave_wrapper` está deprecado
+
+El módulo `client-sdk/src/enclave_wrapper.rs` (`EnclaveWrapper` /
+`HardwareHandshake`) es un stub legado, marcado `#[deprecated]`. Cualquier
+integración nueva —incluida esta demo— debe usar `hw_trust` directamente
+(`HwTrustBackend`, `hw_trust::sign_challenge_with_backend`, el CLI
+`fortgate-hw-poc`), no el wrapper viejo. Ver detalle en
+[`HW_TRUST_POC_SPEC.md` § 3.1](./HW_TRUST_POC_SPEC.md#31-core-rust-open-client-sdk).
+
 ## Referencias
 
 - [`HW_TRUST_POC_SPEC.md`](./HW_TRUST_POC_SPEC.md)

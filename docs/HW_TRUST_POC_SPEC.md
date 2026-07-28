@@ -82,6 +82,15 @@ flowchart TB
 | `hw_trust/backends/mod.rs` | Trait `HwTrustBackend` |
 | `enclave_wrapper.rs` | Deprecar stub gradualmente; reexportar desde `hw_trust` |
 
+> **Estado (✅ hecho):** `EnclaveWrapper` y `HardwareHandshake` están marcados
+> `#[deprecated]`. En targets no-wasm32, `EnclaveWrapper::request_hardware_signature`
+> ya no devuelve vectores vacíos: delega en el backend `hw_trust::SoftwarePocBackend`.
+> El punto de entrada recomendado para integraciones nuevas es `hw_trust` +
+> `HwTrustBackend` (reexportados también en la raíz del crate como
+> `fortgate_id::{HwTrustBackend, HwHandshake, sign_challenge_with_backend,
+> default_software_backend}`). En wasm32, donde `hw_trust` aún no está disponible,
+> el stub conserva el comportamiento original de vectores vacíos.
+
 ### 3.2 CLI (`fortgate-hw-poc`)
 
 Binario en `open/client-sdk/src/bin/hw_poc.rs` o crate `fortgate-hw-cli`.
