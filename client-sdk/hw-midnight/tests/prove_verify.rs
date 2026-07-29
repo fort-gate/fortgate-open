@@ -92,3 +92,30 @@ fn bank_verifier_green_roundtrip() {
         other => panic!("expected GREEN, got {other:?}"),
     }
 }
+
+#[test]
+#[ignore = "requiere SRS: hw-midnight/scripts/fetch_srs.sh"]
+fn tampered_hw_nullifier_fails() {
+    let dir = tempdir().unwrap();
+    let hs = software_handshake(dir.path());
+
+    let provider = MidnightHwTrustProvider::new();
+    provider.setup_keys().expect("setup vk/pk");
+
+    let mut public_inputs =
+        fortgate_hw_midnight::public_inputs_from_handshake(&hs).expect("public inputs");
+    public_inputs.hw_nullifier[0] ^= 0xFF;
+    let witness = fortgate_hw_midnight::witness_from_handshake(&hs).expect("witness");
+
+    match provider.prove(&public_inputs, witness) {
+        Err(_) => {} // circuit correctly rejected the tampered instance during proving
+        Ok(package) => {
+            // if proving didn't reject it outright, verification against the
+            // tampered public input must still fail
+            assert!(
+                provider.verify_package(&package).is_err(),
+                "verify no debe aceptar un hw_nullifier alterado"
+            );
+        }
+    }
+}

@@ -941,6 +941,8 @@ dependencies = [
  "hex",
  "js-sys",
  "light-poseidon",
+ "midnight-circuits",
+ "midnight-curves",
  "num-bigint",
  "p256",
  "rand",

@@ -65,7 +65,7 @@ gps       ──► prove geo-range-v1
 | `challenge_hash` | `[u8; 32]` | `SHA-256(JCS(M_hw))` |
 | `pubkey_commitment` | `[u8; 32]` | `SHA-256(pubkey_spki_der)` |
 | `tier` | `u8` | `0=Medium`, `1=High`, `2=Maximum` |
-| `hw_nullifier` | `[u8; 32]` | Poseidon(domain `0x4648`) |
+| `hw_nullifier` | `[u8; 32]` | `Poseidon_2(pubkey_commitment, 0x4648)` sobre BLS12-381 Fr (campo nativo Midnight); verificado **on-circuit** |
 | `circuit_version` | string | `hw-trust-v1` |
 | `proof_provider_id` | string | siempre `midnight` en PoC |
 
@@ -89,8 +89,10 @@ Ver [`GEO_RANGE_PROOF_SPEC.md`](./GEO_RANGE_PROOF_SPEC.md). Inputs públicos: ce
 ```
 1. SHA-256(pubkey_spki_der) == pubkey_commitment
 2. ECDSA_P256_VERIFY(pubkey, challenge_hash, signature) == true
-3. hw_nullifier == Poseidon_2(pubkey_commitment_as_Fr, 0x4648)
+3. hw_nullifier == Poseidon_2(pubkey_commitment_as_field_element, 0x4648)  [sobre el campo nativo del circuito Midnight — BLS12-381 Fr, NO BN254]
 ```
+
+El paso 3 se restringe **on-circuit** (`HwTrustRelationV1::circuit` → `std_lib.poseidon()`), no como input público sin constraint (bug de soundness corregido). Midnight no expone emulación soportada del campo escalar BN254 dentro de un circuito BLS12-381 nativo; reutilizar el chip Poseidon auditado de la stdlib fue la única vía viable para constraint real.
 
 El tier **no** se demuestra en circuito; se declara y valida off-chain (attestation Android).
 
@@ -202,7 +204,7 @@ impl HwTrustProofProvider for MidnightHwTrustProvider {
 
 **Plan spike (Semana 2, día 1–2):**
 
-1. Medir `optimal_k` y `cost_model` con SHA-256(SPKI) + Poseidon.
+1. Medir `optimal_k` y `cost_model` con SHA-256(SPKI) + Poseidon nativo Midnight (BLS12-381 Fr, on-circuit).
 2. Añadir verificación ECDSA P-256 (crate `p256` fuera de circuito primero; luego port a constraints).
 3. Si prove desktop &lt; 10 s y constraints &lt; 65k → proceder Android.
 4. Si P-256 es prohibitivo → escalar a equipo Midnight/IOHK o dividir statement (solo para investigación).

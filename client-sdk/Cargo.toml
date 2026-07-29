@@ -44,3 +44,7 @@ uniffi_build = "0.28"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.2", features = ["js"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+midnight-circuits = "7.2"
+midnight-curves = "0.3"

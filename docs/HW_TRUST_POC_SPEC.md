@@ -171,10 +171,12 @@ Validación antes de `prove`:
 Dominio separado del nullifier de identidad (`0x4647`):
 
 ```
-hw_nullifier = Poseidon_2( Fr(pubkey_commitment_bytes), Fr(0x4648) )
+hw_nullifier = Poseidon_2( pubkey_commitment_bytes mod r, 0x4648 )
 ```
 
-`0x4648` = `"FH"` (Fortgate Hardware). Misma curva BN254 / reglas que `field_encoding.rs` cuando se serialice a hex 64 chars.
+Sobre el campo escalar nativo del circuito Midnight (BLS12-381, `midnight_curves::Fq`) — **no** BN254 — usando el `PoseidonChip` / `std_lib.poseidon()` de Midnight, tanto off-circuit (`client-sdk/src/hw_trust/commitment.rs`) como on-circuit en `HwTrustRelationV1` (`client-sdk/hw-midnight/src/relation.rs`), con una sola vía de reducción (`pubkey_commitment_bytes mod r`).
+
+`0x4648` = `"FH"` (Fortgate Hardware); el separador de dominio no cambia. El `hw_nullifier` queda **restringido on-circuit** (no solo verificado off-circuit). Serialización a hex: 64 caracteres (32 bytes BE).
 
 ---
 

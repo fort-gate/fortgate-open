@@ -2,8 +2,10 @@
 
 use crate::circuit_util::{assign_public_bytes, verify_ecdsa_p256_prehash};
 use crate::types::{HwTrustCircuitInstance, SPKI_LEN};
-use midnight_circuits::instructions::{AssertionInstructions, AssignmentInstructions};
-use midnight_circuits::types::{AssignedByte, Instantiable};
+use midnight_circuits::instructions::{
+    AssertionInstructions, AssignmentInstructions, DecompositionInstructions,
+};
+use midnight_circuits::types::{AssignedByte, AssignedNative, Instantiable};
 use midnight_proofs::{
     circuit::{Layouter, Value},
     plonk::Error,
@@ -71,7 +73,7 @@ impl Relation for HwTrustRelationV1 {
 
         let assigned_challenge = assign_public_bytes(std_lib, layouter, challenge_hash)?;
         let assigned_commitment = assign_public_bytes(std_lib, layouter, pubkey_commitment)?;
-        let _assigned_nullifier = assign_public_bytes(std_lib, layouter, hw_nullifier)?;
+        let assigned_nullifier = assign_public_bytes(std_lib, layouter, hw_nullifier)?;
 
         let spki = witness.clone().map(|w| w.spki_der);
         let sig = witness.clone().map(|w| w.signature);
@@ -81,6 +83,20 @@ impl Relation for HwTrustRelationV1 {
             std_lib.assign_many(layouter, &spki.transpose_array())?;
         let hash_bytes = std_lib.sha2_256(layouter, &assigned_spki)?;
         for (computed, expected) in hash_bytes.iter().zip(assigned_commitment.iter()) {
+            std_lib.assert_equal(layouter, computed, expected)?;
+        }
+
+        // hw_nullifier = Poseidon_2(pubkey_commitment mod r, HW_NULLIFIER_DOMAIN)
+        // Domain MUST be assign_fixed (circuit constant), not a free witness.
+        let pk_native: AssignedNative<F> =
+            std_lib.assigned_from_be_bytes(layouter, &assigned_commitment)?;
+        let domain: AssignedNative<F> = std_lib.assign_fixed(
+            layouter,
+            F::from(fortgate_id::hw_trust::HW_NULLIFIER_DOMAIN),
+        )?;
+        let computed_nullifier = std_lib.poseidon(layouter, &[pk_native, domain])?;
+        let nullifier_bytes = std_lib.assigned_to_be_bytes(layouter, &computed_nullifier, Some(32))?;
+        for (computed, expected) in nullifier_bytes.iter().zip(assigned_nullifier.iter()) {
             std_lib.assert_equal(layouter, computed, expected)?;
         }
 
@@ -99,6 +115,7 @@ impl Relation for HwTrustRelationV1 {
         ZkStdLibArch {
             sha2_256: true,
             p256: true,
+            poseidon: true,
             nr_pow2range_cols: 3,
             ..ZkStdLibArch::default()
         }
