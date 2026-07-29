@@ -1,0 +1,5 @@
+# Cargo build artifacts
+target/
+
+# fg-bench outputs (generated locally, see scripts/run_bench.sh)
+*.bench.json
