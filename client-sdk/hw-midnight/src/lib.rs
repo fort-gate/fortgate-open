@@ -15,6 +15,7 @@ mod error;
 mod geo;
 mod geo_range;
 mod geo_range_provider;
+mod key_cache;
 mod manifest;
 mod midnight_provider;
 mod orchestrator;

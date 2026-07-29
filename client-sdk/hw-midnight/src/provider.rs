@@ -1,4 +1,5 @@
 use crate::error::HwMidnightError;
+use crate::key_cache::{key_or_init, KeyKind};
 use crate::relation::HwTrustRelationV1;
 use crate::srs::{ensure_parent, load_srs_for_relation, pk_path, vk_path, VK_SERDE};
 use crate::types::{
@@ -12,6 +13,7 @@ use rand::rngs::OsRng;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Instant;
 
 pub struct MidnightHwTrustProvider {
@@ -37,6 +39,7 @@ impl MidnightHwTrustProvider {
 
     /// Genera vk/pk y los persiste en `hw-midnight/vkeys/` (trusted setup dev).
     pub fn setup_keys(&self) -> Result<(), HwMidnightError> {
+        crate::key_cache::invalidate_circuit(CIRCUIT_VERSION);
         let srs = load_srs_for_relation(&self.relation)?;
         let vk = midnight_zk_stdlib::setup_vk(&srs, &self.relation);
         let pk = midnight_zk_stdlib::setup_pk(&self.relation, &vk);
@@ -55,24 +58,30 @@ impl MidnightHwTrustProvider {
         Ok(())
     }
 
-    pub fn load_vk(&self) -> Result<MidnightVK, HwMidnightError> {
-        let path = vk_path();
-        if !path.exists() {
-            self.setup_keys()?;
-        }
-        let f = File::open(path)?;
-        MidnightVK::read(&mut BufReader::new(f), VK_SERDE)
-            .map_err(|e| HwMidnightError::Prove(format!("leer vk: {e}")))
+    /// Circuit verifying key, read from disk once per process.
+    pub fn load_vk(&self) -> Result<Arc<MidnightVK>, HwMidnightError> {
+        key_or_init(CIRCUIT_VERSION, KeyKind::Verifying, || {
+            let path = vk_path();
+            if !path.exists() {
+                self.setup_keys()?;
+            }
+            let f = File::open(path)?;
+            MidnightVK::read(&mut BufReader::new(f), VK_SERDE)
+                .map_err(|e| HwMidnightError::Prove(format!("leer vk: {e}")))
+        })
     }
 
-    pub fn load_pk(&self) -> Result<MidnightPK<HwTrustRelationV1>, HwMidnightError> {
-        let path = pk_path();
-        if !path.exists() {
-            self.setup_keys()?;
-        }
-        let f = File::open(path)?;
-        MidnightPK::read(&mut BufReader::new(f), VK_SERDE)
-            .map_err(|e| HwMidnightError::Prove(format!("leer pk: {e}")))
+    /// Circuit proving key, read from disk once per process.
+    pub fn load_pk(&self) -> Result<Arc<MidnightPK<HwTrustRelationV1>>, HwMidnightError> {
+        key_or_init(CIRCUIT_VERSION, KeyKind::Proving, || {
+            let path = pk_path();
+            if !path.exists() {
+                self.setup_keys()?;
+            }
+            let f = File::open(path)?;
+            MidnightPK::read(&mut BufReader::new(f), VK_SERDE)
+                .map_err(|e| HwMidnightError::Prove(format!("leer pk: {e}")))
+        })
     }
 
     pub fn prove_handshake(&self, hs: &HwHandshake) -> Result<HwProofPackage, HwMidnightError> {
@@ -92,7 +101,6 @@ impl MidnightHwTrustProvider {
             hw_nullifier: public_inputs.hw_nullifier,
         };
         let srs = load_srs_for_relation(&self.relation)?;
-        let vk = self.load_vk()?;
         let pk = self.load_pk()?;
 
         let start = Instant::now();
@@ -106,8 +114,6 @@ impl MidnightHwTrustProvider {
         )
         .map_err(|e| HwMidnightError::Prove(e.to_string()))?;
         let proving_time_ms = start.elapsed().as_millis() as u64;
-
-        let _ = vk;
 
         Ok(HwProofPackage {
             package_version: PACKAGE_VERSION.to_string(),

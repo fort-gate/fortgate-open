@@ -4,8 +4,10 @@ use rand::rngs::OsRng;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Instant;
 
+use crate::key_cache::{key_or_init, KeyKind};
 use crate::srs::{ensure_parent, load_srs_for_relation, vkeys_dir, VK_SERDE};
 
 pub struct MidnightCircuitProvider<R> {
@@ -15,7 +17,7 @@ pub struct MidnightCircuitProvider<R> {
 
 impl<R> MidnightCircuitProvider<R>
 where
-    R: Relation + Clone + Default,
+    R: Relation + Clone + Default + Send + Sync + 'static,
     <R as Relation>::Error: std::fmt::Debug,
 {
     pub fn new(relation: R, circuit_id: &'static str) -> Self {
@@ -42,6 +44,7 @@ where
     }
 
     pub fn setup_keys(&self) -> Result<(), HwMidnightError> {
+        crate::key_cache::invalidate_circuit(self.circuit_id);
         let srs = load_srs_for_relation(&self.relation)?;
         let vk = midnight_zk_stdlib::setup_vk(&srs, &self.relation);
         let pk = midnight_zk_stdlib::setup_pk(&self.relation, &vk);
@@ -60,24 +63,30 @@ where
         Ok(())
     }
 
-    pub fn load_vk(&self) -> Result<MidnightVK, HwMidnightError> {
-        let path = self.vk_path();
-        if !path.exists() {
-            self.setup_keys()?;
-        }
-        let f = File::open(path)?;
-        MidnightVK::read(&mut BufReader::new(f), VK_SERDE)
-            .map_err(|e| HwMidnightError::Prove(format!("leer vk: {e}")))
+    /// Circuit verifying key, read from disk once per process.
+    pub fn load_vk(&self) -> Result<Arc<MidnightVK>, HwMidnightError> {
+        key_or_init(self.circuit_id, KeyKind::Verifying, || {
+            let path = self.vk_path();
+            if !path.exists() {
+                self.setup_keys()?;
+            }
+            let f = File::open(path)?;
+            MidnightVK::read(&mut BufReader::new(f), VK_SERDE)
+                .map_err(|e| HwMidnightError::Prove(format!("leer vk: {e}")))
+        })
     }
 
-    pub fn load_pk(&self) -> Result<MidnightPK<R>, HwMidnightError> {
-        let path = self.pk_path();
-        if !path.exists() {
-            self.setup_keys()?;
-        }
-        let f = File::open(path)?;
-        MidnightPK::read(&mut BufReader::new(f), VK_SERDE)
-            .map_err(|e| HwMidnightError::Prove(format!("leer pk: {e}")))
+    /// Circuit proving key, read from disk once per process.
+    pub fn load_pk(&self) -> Result<Arc<MidnightPK<R>>, HwMidnightError> {
+        key_or_init(self.circuit_id, KeyKind::Proving, || {
+            let path = self.pk_path();
+            if !path.exists() {
+                self.setup_keys()?;
+            }
+            let f = File::open(path)?;
+            MidnightPK::read(&mut BufReader::new(f), VK_SERDE)
+                .map_err(|e| HwMidnightError::Prove(format!("leer pk: {e}")))
+        })
     }
 
     pub fn prove(
