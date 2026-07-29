@@ -90,11 +90,47 @@ Ver [`enterprise/credit-sign-api/README.md`](../../enterprise/credit-sign-api/RE
 
 Ver [`demo/README.md`](../../demo/README.md).
 
-## Tiempos de referencia (release, Mac PoC)
+## Tiempos de prove
 
-| Paso | ~ms |
-|------|-----|
-| hw-trust prove | 6 900 |
-| doc-bind prove | 7 800 |
-| geo-range prove | 65 |
-| verify 3 proofs | 8 000 |
+Medianas de 5 iteraciones en un i5-12450H (12 núcleos lógicos, 8 GB, Windows 11),
+rustc 1.88.0, perfil `release`. Wall-clock de `prove()`, incluida la carga de SRS y llaves.
+
+| Circuito | Antes | Ahora | Δ |
+|---|---|---|---|
+| `hw-trust-v1` | 11 127 ms | **6 294 ms** | -43,4% |
+| `doc-bind-v1` | 11 059 ms | **6 366 ms** | -42,4% |
+| `geo-range-v1` | 65 ms | **55 ms** | -16,0% |
+| **Total** | **22 252 ms** | **12 715 ms** | **-42,9%** |
+
+La mejora viene de cachear el SRS, las llaves y el `k` óptimo en memoria: antes se
+recargaban desde disco en cada `prove()` y cada `verify()`, lo que era el 44% del tiempo.
+Lo que queda es generación de prueba pura. `verify` baja igual: pagaba ~2 845 ms por
+prueba, casi todo carga de SRS y vk.
+
+El objetivo de <5 s no se alcanza: lo impide la verificación ECDSA P-256 emulada sobre
+BLS12-381, que fija `k = 16` en ambos circuitos pesados. El análisis del piso y la ruta
+de fusión `hw-doc-v1` están en
+[`docs/adr/ADR-0001`](../../docs/adr/ADR-0001-prove-time-optimization.md).
+
+> Los ~6 900 ms / ~7 800 ms que figuraban antes aquí se midieron en un Mac PoC y
+> correspondían solo a la generación de la prueba, sin la carga de SRS y llaves. La
+> columna "Antes" de arriba es wall-clock completo en la máquina indicada, así que no es
+> directamente comparable con aquellas cifras.
+
+### Reproducir
+
+```bash
+./scripts/fetch_srs.sh                        # una vez, ~100 MB
+./scripts/run_bench.sh after.json before.json
+```
+
+`fg-bench` es la herramienta de perfilado:
+
+```bash
+cargo run --release --bin fg-bench -- model            # perfil estático: k, filas, ocupación
+cargo run --release --bin fg-bench -- model --k 15     # fuerza k para ver qué fija el tamaño
+cargo run --release --bin fg-bench -- bench --iters 5  # prove/verify reales, JSON
+cargo run --release --bin fg-bench -- compare --before a.json --after b.json
+```
+
+`compare` sale con código de error si `geo-range-v1` regresiona más de un 10%.
