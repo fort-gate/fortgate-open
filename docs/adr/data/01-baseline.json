@@ -1,0 +1,183 @@
+{
+  "schema": "fg-bench/v1",
+  "label": "baseline (no profile.release, no cache)",
+  "timestamp": "2026-07-28T02:47:53.003222800+00:00",
+  "iters": 5,
+  "warmup": 1,
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "logical_cores": 12,
+    "total_ram_bytes": 8241938432,
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "toolchain": {
+    "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+    "cargo": "cargo 1.88.0 (873a06493 2025-05-10)"
+  },
+  "flags": {
+    "rustflags": null,
+    "debug_assertions": false,
+    "profile": "release"
+  },
+  "circuits": [
+    {
+      "id": "hw-trust-v1",
+      "model": {
+        "k": 16,
+        "rows": 31648,
+        "table_rows": 55569,
+        "max_deg": 5,
+        "advice_columns": 9,
+        "fixed_columns": 54,
+        "lookups": 6,
+        "permutations": 12,
+        "proof_size_bytes": 5856,
+        "occupancy": 0.48291015625
+      },
+      "prove_wall_ms": {
+        "median": 11127.1948,
+        "min": 11086.5903,
+        "max": 11542.1138,
+        "samples": [
+          11542.1138,
+          11127.1948,
+          11208.7178,
+          11086.5903,
+          11122.8825
+        ]
+      },
+      "prove_inner_ms": {
+        "median": 6211.0,
+        "min": 6159.0,
+        "max": 6520.0,
+        "samples": [
+          6520.0,
+          6211.0,
+          6212.0,
+          6165.0,
+          6159.0
+        ]
+      },
+      "verify_wall_ms": {
+        "median": 2844.8653,
+        "min": 2794.9112,
+        "max": 2874.031,
+        "samples": [
+          2874.031,
+          2844.8653,
+          2794.9112,
+          2839.341,
+          2862.9715
+        ]
+      },
+      "proof_bytes": 5888
+    },
+    {
+      "id": "doc-bind-v1",
+      "model": {
+        "k": 16,
+        "rows": 31622,
+        "table_rows": 55569,
+        "max_deg": 5,
+        "advice_columns": 9,
+        "fixed_columns": 54,
+        "lookups": 6,
+        "permutations": 12,
+        "proof_size_bytes": 5856,
+        "occupancy": 0.482513427734375
+      },
+      "prove_wall_ms": {
+        "median": 11059.300000000001,
+        "min": 10972.0715,
+        "max": 11072.4167,
+        "samples": [
+          11059.300000000001,
+          11072.4167,
+          11067.8179,
+          11011.7072,
+          10972.0715
+        ]
+      },
+      "prove_inner_ms": {
+        "median": 6164.0,
+        "min": 6113.0,
+        "max": 6202.0,
+        "samples": [
+          6164.0,
+          6198.0,
+          6202.0,
+          6162.0,
+          6113.0
+        ]
+      },
+      "verify_wall_ms": {
+        "median": 2842.4669,
+        "min": 2819.8375,
+        "max": 2860.351,
+        "samples": [
+          2831.5419,
+          2854.9109000000003,
+          2819.8375,
+          2842.4669,
+          2860.351
+        ]
+      },
+      "proof_bytes": 5888
+    },
+    {
+      "id": "geo-range-v1",
+      "model": {
+        "k": 9,
+        "rows": 25,
+        "table_rows": 257,
+        "max_deg": 5,
+        "advice_columns": 5,
+        "fixed_columns": 25,
+        "lookups": 4,
+        "permutations": 8,
+        "proof_size_bytes": 3408,
+        "occupancy": 0.048828125
+      },
+      "prove_wall_ms": {
+        "median": 65.4464,
+        "min": 63.8331,
+        "max": 70.4086,
+        "samples": [
+          65.4464,
+          63.8331,
+          70.4086,
+          66.4796,
+          65.21549999999999
+        ]
+      },
+      "prove_inner_ms": {
+        "median": 52.0,
+        "min": 51.0,
+        "max": 52.0,
+        "samples": [
+          52.0,
+          51.0,
+          52.0,
+          52.0,
+          52.0
+        ]
+      },
+      "verify_wall_ms": {
+        "median": 7.445,
+        "min": 7.2579,
+        "max": 7.88,
+        "samples": [
+          7.445,
+          7.8038,
+          7.267799999999999,
+          7.2579,
+          7.88
+        ]
+      },
+      "proof_bytes": 3440
+    }
+  ],
+  "total_prove_wall_ms": 22251.9412,
+  "total_prove_inner_ms": 12427.0
+}
