@@ -1,0 +1,183 @@
+{
+  "schema": "fg-bench/v1",
+  "label": "Fase 1 completa: cache + LTO fat",
+  "timestamp": "2026-07-28T03:19:51.583261400+00:00",
+  "iters": 5,
+  "warmup": 1,
+  "machine": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "logical_cores": 12,
+    "total_ram_bytes": 8241938432,
+    "os": "windows",
+    "arch": "x86_64"
+  },
+  "toolchain": {
+    "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)",
+    "cargo": "cargo 1.88.0 (873a06493 2025-05-10)"
+  },
+  "flags": {
+    "rustflags": null,
+    "debug_assertions": false,
+    "profile": "release + lto=fat + codegen-units=1"
+  },
+  "circuits": [
+    {
+      "id": "hw-trust-v1",
+      "model": {
+        "k": 16,
+        "rows": 31648,
+        "table_rows": 55569,
+        "max_deg": 5,
+        "advice_columns": 9,
+        "fixed_columns": 54,
+        "lookups": 6,
+        "permutations": 12,
+        "proof_size_bytes": 5856,
+        "occupancy": 0.48291015625
+      },
+      "prove_wall_ms": {
+        "median": 6137.667,
+        "min": 6087.586499999999,
+        "max": 6254.9358,
+        "samples": [
+          6172.3598,
+          6087.586499999999,
+          6254.9358,
+          6092.4898,
+          6137.667
+        ]
+      },
+      "prove_inner_ms": {
+        "median": 6137.0,
+        "min": 6087.0,
+        "max": 6254.0,
+        "samples": [
+          6172.0,
+          6087.0,
+          6254.0,
+          6092.0,
+          6137.0
+        ]
+      },
+      "verify_wall_ms": {
+        "median": 4.821,
+        "min": 4.5699,
+        "max": 5.2257,
+        "samples": [
+          4.5699,
+          4.9293000000000005,
+          4.7993999999999994,
+          4.821,
+          5.2257
+        ]
+      },
+      "proof_bytes": 5888
+    },
+    {
+      "id": "doc-bind-v1",
+      "model": {
+        "k": 16,
+        "rows": 31622,
+        "table_rows": 55569,
+        "max_deg": 5,
+        "advice_columns": 9,
+        "fixed_columns": 54,
+        "lookups": 6,
+        "permutations": 12,
+        "proof_size_bytes": 5856,
+        "occupancy": 0.482513427734375
+      },
+      "prove_wall_ms": {
+        "median": 6444.223,
+        "min": 6183.4928,
+        "max": 6979.281,
+        "samples": [
+          6444.223,
+          6183.4928,
+          6979.281,
+          6471.768,
+          6325.8731
+        ]
+      },
+      "prove_inner_ms": {
+        "median": 6443.0,
+        "min": 6183.0,
+        "max": 6978.0,
+        "samples": [
+          6443.0,
+          6183.0,
+          6978.0,
+          6471.0,
+          6325.0
+        ]
+      },
+      "verify_wall_ms": {
+        "median": 5.569400000000001,
+        "min": 4.7041,
+        "max": 5.6743999999999994,
+        "samples": [
+          4.7041,
+          5.602099999999999,
+          4.823799999999999,
+          5.6743999999999994,
+          5.569400000000001
+        ]
+      },
+      "proof_bytes": 5888
+    },
+    {
+      "id": "geo-range-v1",
+      "model": {
+        "k": 9,
+        "rows": 25,
+        "table_rows": 257,
+        "max_deg": 5,
+        "advice_columns": 5,
+        "fixed_columns": 25,
+        "lookups": 4,
+        "permutations": 8,
+        "proof_size_bytes": 3408,
+        "occupancy": 0.048828125
+      },
+      "prove_wall_ms": {
+        "median": 54.199600000000004,
+        "min": 53.428200000000004,
+        "max": 56.2049,
+        "samples": [
+          56.2049,
+          53.5912,
+          54.199600000000004,
+          53.428200000000004,
+          54.6197
+        ]
+      },
+      "prove_inner_ms": {
+        "median": 54.0,
+        "min": 53.0,
+        "max": 56.0,
+        "samples": [
+          56.0,
+          53.0,
+          54.0,
+          53.0,
+          54.0
+        ]
+      },
+      "verify_wall_ms": {
+        "median": 3.4627999999999997,
+        "min": 3.0463999999999998,
+        "max": 3.7742,
+        "samples": [
+          3.7742,
+          3.0463999999999998,
+          3.5257,
+          3.1375,
+          3.4627999999999997
+        ]
+      },
+      "proof_bytes": 3440
+    }
+  ],
+  "total_prove_wall_ms": 12636.0896,
+  "total_prove_inner_ms": 12634.0
+}
