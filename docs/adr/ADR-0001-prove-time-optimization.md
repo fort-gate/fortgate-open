@@ -146,6 +146,31 @@ Desglose del overhead eliminado, por circuito:
 `geo-range-v1` no regresiona: 65 ms → 55 ms, muy por debajo del límite de 65 × 1,1 = 71,5 ms.
 `fg-bench compare` lo verifica automáticamente y falla si se supera.
 
+### Cuánto de esto se ve en un proceso de un solo disparo
+
+Los números de arriba son de `fg-bench`, que descarta una iteración de calentamiento y
+reporta la mediana de cinco. Eso representa el escenario de proving repetido, es decir un
+servicio de larga duración. **Un proceso que arranca, genera las tres pruebas y termina
+aprovecha bastante menos**, porque solo puede compartir el SRS y el `k` entre los tres
+circuitos y entre prove y verify, nunca entre repeticiones.
+
+Medido con `fortgate-hw-poc demo-full`, que es exactamente ese caso:
+
+| | `main` (n=3) | con el caché (n=5) |
+|---|---|---|
+| `prove_all`, mediana | 41 863 ms | **33 502 ms (-20%)** |
+| `prove_all`, rango | 38 986 – 55 946 ms | 22 955 – 68 646 ms |
+| `verify` de las 3 pruebas | ~7 045 ms | **~185 ms (-97%)** |
+| Pico de working set | 0,99 GB | **1,62 GB** |
+
+El wall-clock de un disparo único tiene una varianza enorme en esta máquina (`main` varía
+2× consigo mismo, de 39 a 56 s), porque el arranque en frío paga la lectura de las llaves
+recién escritas por `setup_all_keys` y el antivirus escaneándolas. Por eso las cifras de
+esta tabla son indicativas y las de `fg-bench` son las que se deben citar.
+
+La caída de `verify` a ~185 ms es el efecto más grande y el más robusto: `verify` reutiliza
+el SRS que `prove` ya dejó cargado, así que deja de pagar los ~2 845 ms por prueba.
+
 ## El objetivo de <5 s no se alcanza: el piso
 
 El total quedó en **12,7 s**, contra un objetivo de 5 s. El piso está donde ya estaba: la
@@ -184,7 +209,11 @@ emulada, o delegar la prueba a un backend con hardware (el repo ya tiene `sp1-pr
 * `MidnightCircuitProvider<R>` exige ahora `R: Send + Sync + 'static`. Las tres relations
   del PoC lo cumplen por ser structs unitarios.
 * El proceso retiene el SRS y las llaves en memoria mientras vive. Es el intercambio
-  deliberado: memoria por tiempo. En un servicio de larga duración es lo que se quiere;
-  para un CLI de un solo disparo no cambia nada porque igual se paga una vez.
+  deliberado: memoria por tiempo. Medido con `demo-full`, el pico de working set sube de
+  **0,99 GB a 1,62 GB** (+64%), porque las tres proving keys y el SRS conviven en vez de
+  liberarse tras cada circuito. En una máquina de 8 GB no hubo paginación ni degradación,
+  pero es un dato a tener en cuenta si el proveedor corre en un contenedor con límite de
+  memoria ajustado. Si eso fuera un problema, la mitigación natural es acotar el caché de
+  proving keys (la vk y el SRS son mucho más chicos y son los que más se reutilizan).
 * F2.2 cambia el circuito, así que las vk/pk previas dejan de servir. `setup_keys` las
   regenera automáticamente cuando faltan.
