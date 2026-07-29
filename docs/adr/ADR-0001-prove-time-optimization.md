@@ -148,6 +148,31 @@ loading.
 `geo-range-v1` does not regress: 65 ms → 55 ms, well below the limit of 65 × 1.1 = 71.5 ms.
 `fg-bench compare` checks this automatically and fails if the limit is exceeded.
 
+### How much of this shows up in a single-shot process
+
+The numbers above come from `fg-bench`, which discards one warm-up iteration and reports the
+median of five. That represents the repeated-proving scenario, i.e. a long-running service.
+**A process that starts up, generates the three proofs and exits benefits considerably
+less**, because it can only share the SRS and `k` across the three circuits and between
+prove and verify, never across repetitions.
+
+Measured with `fortgate-hw-poc demo-full`, which is exactly that case:
+
+| | `main` (n=3) | with the cache (n=5) |
+|---|---|---|
+| `prove_all`, median | 41,863 ms | **33,502 ms (-20%)** |
+| `prove_all`, range | 38,986 – 55,946 ms | 22,955 – 68,646 ms |
+| `verify` of the 3 proofs | ~7,045 ms | **~185 ms (-97%)** |
+| Peak working set | 0.99 GB | **1.62 GB** |
+
+Single-shot wall-clock has enormous variance on this machine (`main` varies 2× against
+itself, from 39 to 56 s), because the cold start pays for reading the keys just written by
+`setup_all_keys` and for the antivirus scanning them. That is why the figures in this table
+are indicative and the `fg-bench` ones are the numbers to quote.
+
+The drop of `verify` to ~185 ms is the largest and most robust effect: `verify` reuses the
+SRS that `prove` already left loaded, so it stops paying the ~2,845 ms per proof.
+
 ## The <5 s target is not met: the floor
 
 The total came out at **12.7 s**, against a 5 s target. The floor is where it already was:
@@ -187,7 +212,11 @@ already has `sp1-prover`).
 * `MidnightCircuitProvider<R>` now requires `R: Send + Sync + 'static`. The three PoC
   relations satisfy it, being unit structs.
 * The process retains the SRS and the keys in memory for its whole lifetime. That is the
-  deliberate trade-off: memory for time. In a long-running service that is what you want;
-  for a single-shot CLI it changes nothing, since it is paid once either way.
+  deliberate trade-off: memory for time. Measured with `demo-full`, the peak working set
+  rises from **0.99 GB to 1.62 GB** (+64%), because the three proving keys and the SRS
+  coexist instead of being freed after each circuit. On an 8 GB machine there was no paging
+  or degradation, but it is worth keeping in mind if the provider runs in a container with a
+  tight memory limit. Should that become a problem, the natural mitigation is to bound the
+  proving-key cache (the vk and the SRS are much smaller and are the most reused).
 * F2.2 changes the circuit, so previous vk/pk are no longer valid. `setup_keys` regenerates
   them automatically when they are missing.
