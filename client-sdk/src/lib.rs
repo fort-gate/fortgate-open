@@ -3,9 +3,13 @@
 
 pub mod blinded_witness;
 pub mod cert_parser;
+/// Deprecated hardware-handshake stub; see [`hw_trust`] for the current API.
 pub mod enclave_wrapper;
 pub mod field_encoding;
 pub mod hardware;
+/// Hardware-trust handshake: the recommended entrypoint for hardware
+/// attestation/signing (see `docs/HW_TRUST_POC_SPEC.md`). Supersedes the
+/// deprecated [`enclave_wrapper`] stub.
 #[cfg(not(target_arch = "wasm32"))]
 pub mod hw_trust;
 pub mod types;
@@ -19,6 +23,13 @@ use crate::types::SecurityTier;
 
 pub use cert_parser::{parse_sp1_inputs, CertParseError, Sp1CertInputs};
 pub use blinded_witness::BlindedWitnessGenerator;
+
+/// Recommended entrypoint for hardware attestation/signing; supersedes the
+/// deprecated [`enclave_wrapper`] stub.
+#[cfg(not(target_arch = "wasm32"))]
+pub use hw_trust::{
+    backends::HwTrustBackend, default_software_backend, sign_challenge_with_backend, HwHandshake,
+};
 
 uniffi::include_scaffolding!("fortgate_id");
 
