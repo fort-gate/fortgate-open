@@ -29,5 +29,17 @@ group = "0.13"
 name = "fortgate-hw-poc"
 path = "src/bin/fortgate_hw_poc.rs"
 
+[[bin]]
+name = "fg-bench"
+path = "src/bin/fg_bench.rs"
+
 [dev-dependencies]
 tempfile = "3"
+
+# `lto = "fat"` + `codegen-units = 1` were tried and rejected: no measurable improvement
+# in prove time (+1.6%, within the run-to-run noise) and the clean release build went from
+# 41 s to 7 m 40 s. Prove cost is dominated by the 2^16 FFT/MSM inside midnight-proofs,
+# which is already compiled with opt-level 3 and does not benefit from cross-crate
+# inlining. See ADR-0001 for the numbers.
+[profile.release]
+opt-level = 3
