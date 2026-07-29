@@ -12,6 +12,8 @@ pub trait HwTrustBackend {
     }
 }
 
+pub mod android_keystore;
 pub mod software_poc;
 
+pub use android_keystore::{AndroidKeystore, AndroidKeystoreBackend};
 pub use software_poc::SoftwarePocBackend;
