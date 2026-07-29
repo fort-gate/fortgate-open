@@ -1,0 +1,23 @@
+{
+  "packageVersion": "1.0.0",
+  "mHw": {
+    "hwBindVersion": "1.0.0",
+    "hwSchemaId": "urn:fortgate:hw-bind:v1",
+    "purpose": "fortgate_hw_trust_poc",
+    "challengeId": "4bc7ad05-6030-42a0-9332-8c5366838852",
+    "nonce": "898cf01259fd8f228e578e4201de780a1b1084d667c0d8bd2c55ac3e80f17b41",
+    "issuedAt": "2026-07-29T02:45:22Z",
+    "expiresAt": "2026-07-29T02:50:22Z",
+    "tierClaimed": "Medium",
+    "backend": "software_poc",
+    "pubkeyCommitment": "1b1fdad8259a1b69edcee056ae0bf32333f710b574ad7de906bdb1c0624dc7f9"
+  },
+  "challengeHash": "6bbb25f9838902d471589b5a1d649de5bd77ced51c64867533c7e3c21944a00a",
+  "pubkeySpkiDer": "3059301306072a8648ce3d020106082a8648ce3d0301070342000479a5a8bf9efc8a1d3174d65198348397715697155855b324f28c84cd88e2ea62700573a4fb51d6cb3decdfb71d1bdd3a447117c9ff92755ed5ad46378c3c4476",
+  "pubkeyCommitment": "1b1fdad8259a1b69edcee056ae0bf32333f710b574ad7de906bdb1c0624dc7f9",
+  "signatureDer": "30460221009e15cf1ba2096b34fbae159b58545a435e30bfa02623f006fdd5f5e2d04f243a0221009d9be5bd256b135c1fab60f277c511e7e6073337dc3be06c5607e925e2d68fbb",
+  "tier": "Medium",
+  "backend": "software_poc",
+  "signedAt": "2026-07-29T02:45:22Z",
+  "hwNullifier": "2bf36ac80adb1cac56303ed375b1b2821f682fad38846a88c8b675332c5fe30b"
+}
