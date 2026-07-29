@@ -64,8 +64,15 @@ pub fn verify_ecdsa_p256_prehash(
     let r_as_scalar = scalar_chip.assigned_from_le_bytes(layouter, &r_le_bytes)?;
     let r_as_base = base_chip.assigned_from_le_bytes(layouter, &r_le_bytes)?;
 
-    let r_over_s = scalar_chip.div(layouter, &r_as_scalar, &s)?;
-    let m_over_s = scalar_chip.div(layouter, &msg_hash, &s)?;
+    // Una sola inversión de `s` en vez de dos divisiones. `div(x, s)` es internamente
+    // una inversión más una multiplicación, así que hacerlo dos veces sobre el mismo
+    // divisor invierte `s` dos veces en campo foráneo, que es la operación cara.
+    //
+    // Soundness: algebraicamente idéntico, `x/s == x * s^{-1}`. Se usa `inv` y no `inv0`,
+    // así que `s = 0` sigue dejando el circuito insatisfacible igual que con `div`.
+    let s_inv = scalar_chip.inv(layouter, &s)?;
+    let r_over_s = scalar_chip.mul(layouter, &r_as_scalar, &s_inv, None)?;
+    let m_over_s = scalar_chip.mul(layouter, &msg_hash, &s_inv, None)?;
 
     let gen = curve.assign_fixed(layouter, P256::generator())?;
     let lhs = curve.msm(layouter, &[m_over_s, r_over_s], &[gen, pk_point])?;
