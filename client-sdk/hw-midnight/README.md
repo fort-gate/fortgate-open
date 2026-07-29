@@ -67,9 +67,36 @@ prover.verify_all(&evidence, &handshake, &doc_record)?;
 ## Tests
 
 ```bash
-cargo test                                    # unit tests (rápido)
+cargo test                                    # unit + golden fixtures (rápido, sin SRS)
 cargo test -- --ignored                       # E2E con SRS (~30 s en release)
 ```
+
+### Golden fixtures (`hw-trust-v1`)
+
+`tests/golden_fixtures.rs` guarda un handshake `software_poc` fijo y sus
+`public_inputs` esperados en `tests/fixtures/`:
+
+| Archivo | Contenido |
+|---------|-----------|
+| `hw_trust_handshake.json` | `HwHandshake` firmado (entrada golden) |
+| `hw_trust_public_inputs.json` | `HwTrustPublicInputs` esperados (encoding golden) |
+
+Los tests **no-`#[ignore]`** corren en `cargo test` normal (sin SRS) y fallan si:
+
+- cambia la **derivación** de `public_inputs` desde el handshake,
+- cambia el **encoding** JSON de `HwTrustPublicInputs` (rename de campo, tipo, `rename_all`),
+- cambia el **binding off-circuit** del `hw_nullifier` (Poseidon BN254, dominio `0x4648`),
+- la **verificación local** del handshake deja de ser `Green`.
+
+El prove/verify completo (con SRS) sigue en `tests/prove_verify.rs` detrás de `#[ignore]`.
+
+**Regenerar los fixtures** (tras un cambio intencional de encoding):
+
+```bash
+cargo test --test golden_fixtures regenerate_golden_fixtures -- --ignored --exact
+```
+
+Reescribe los dos JSON desde el backend `software_poc`. Commiteá ambos archivos.
 
 ## CLI (verificación local estilo banco)
 
