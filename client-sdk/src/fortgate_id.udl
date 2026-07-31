@@ -1,6 +1,20 @@
 namespace fortgate_id {
     [Throws=FortgateError]
     BlindedWitnessPackage create_fortgate_witness([ByRef] sequence<u8> cert_der);
+
+    // hw-trust (software_poc): keygen -> challenge -> handshake -> local verify.
+    // El estado de la llave vive en `key_dir`; los cruces del borde son JSON string.
+    [Throws=FortgateError]
+    string hw_software_keygen(string key_dir);
+
+    [Throws=FortgateError]
+    string build_hw_challenge(string key_dir, SecurityTier tier, string? verifier_id);
+
+    [Throws=FortgateError]
+    string sign_hw_challenge(string challenge_json, string key_dir);
+
+    [Throws=FortgateError]
+    HwLocalVerifyResult verify_handshake_local(string handshake_json);
 };
 
 enum SecurityTier {
@@ -16,6 +30,16 @@ dictionary BlindedWitnessPackage {
     sequence<u32> modulus_limbs;
     u32 exponent;
     SecurityTier detected_tier;
+};
+
+enum HwVerifyStatus {
+    "Green",
+    "Red",
+};
+
+dictionary HwLocalVerifyResult {
+    HwVerifyStatus status;
+    string message;
 };
 
 [Error]

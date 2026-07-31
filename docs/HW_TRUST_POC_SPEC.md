@@ -216,7 +216,7 @@ El ZK **no** demuestra que el tier es honesto; la política del verificador comb
 | Permisos | Ninguno especial PoC (sin biometría) |
 | Keystore | EC secp256r1, alias `fortgate_hw_poc` |
 | Attestation | `setAttestationChallenge(challenge_hash)` |
-| FFI | UniFFI: `sign_hw_challenge(challenge_json: String) -> String` |
+| FFI | UniFFI (`fortgate_id.udl`), estado de llave en `key_dir`, cruces JSON string:<br>`hw_software_keygen(key_dir) -> String` (SPKI hex)<br>`build_hw_challenge(key_dir, tier, verifier_id?) -> String` (challenge JSON)<br>`sign_hw_challenge(challenge_json, key_dir) -> String` (handshake JSON)<br>`verify_handshake_local(handshake_json) -> HwLocalVerifyResult` |
 | Export | `handshake.json` en app files + share intent |
 | Prove en device | **Sí** — objetivo PoC vía crate `hw-midnight` enlazado en APK |
 | Fallback dev | Terminal `fortgate-hw-poc prove` si el spike Android no está listo |
